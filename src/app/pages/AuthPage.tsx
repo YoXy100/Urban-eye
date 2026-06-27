@@ -356,7 +356,7 @@ export default function AuthPage() {
       } else if (code === "auth/too-many-requests") {
         setError("Too many attempts. Please wait a moment and try again.");
       } else {
-        setError("Sign-in failed. Please try again.");
+        setError(code === "auth/operation-not-allowed" ? "Email sign-in is not enabled. Please contact support." : "Sign-in failed. Please try again.");
       }
       // Only reset submitting on error — on success we keep spinner until redirect
       setSubmitting(false);
@@ -390,7 +390,7 @@ export default function AuthPage() {
       } else if (code === "auth/weak-password") {
         setError("Password is too weak. Use at least 8 characters.");
       } else {
-        setError("Registration failed. Please try again.");
+        setError(code === "auth/operation-not-allowed" ? "Email registration is not enabled. Please contact support." : "Registration failed. Please try again.");
       }
       setSubmitting(false);
     }
