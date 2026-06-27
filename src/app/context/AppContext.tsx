@@ -4,13 +4,11 @@ import {
 } from "firebase/auth";
 import {
   collection, query, orderBy, onSnapshot,
-  addDoc, updateDoc, doc, serverTimestamp, increment, getDoc
+  addDoc, updateDoc, doc, serverTimestamp
 } from "firebase/firestore";
-import { auth, db, googleProvider } from "../lib/firebase";
-import { getOrCreateUserProfile, UserProfile } from "../lib/userService";
+import { auth, db, googleProvider, githubProvider } from "../lib/firebase";
+import { getOrCreateUserProfile, UserProfile, updateUserProfile } from "../lib/userService";
 import { Issue } from "../data/mockData";
-
-const POINTS_PER_REPORT = 50;
 
 interface AppContextType {
   user: UserProfile | null;
@@ -18,10 +16,13 @@ interface AppContextType {
   loading: boolean;
   issues: Issue[];
   loginWithGoogle: () => Promise<void>;
+  loginWithGithub: () => Promise<void>;
   logout: () => Promise<void>;
   addIssue: (issue: Omit<Issue, "id">) => Promise<void>;
   upvoteIssue: (id: string) => Promise<void>;
   updateIssueStatus: (id: string, status: Issue["status"]) => Promise<void>;
+  reportFakeIssue: (id: string, reason: string) => Promise<void>;
+  updateProfile: (data: { name?: string; photoURL?: string }) => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | null>(null);
@@ -47,18 +48,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     return unsub;
   }, []);
 
-  // Keep local user state in sync with Firestore profile changes
-  useEffect(() => {
-    if (!firebaseUser) return;
-    const userRef = doc(db, "users", firebaseUser.uid);
-    const unsub = onSnapshot(userRef, (snap) => {
-      if (snap.exists()) {
-        setUser(snap.data() as UserProfile);
-      }
-    });
-    return unsub;
-  }, [firebaseUser]);
-
   useEffect(() => {
     const q = query(collection(db, "issues"), orderBy("createdAt", "desc"));
     const unsub = onSnapshot(q, (snap) => {
@@ -71,26 +60,26 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     await signInWithPopup(auth, googleProvider);
   }
 
+  async function loginWithGithub() {
+    await signInWithPopup(auth, githubProvider);
+  }
+
   async function logout() {
     await signOut(auth);
   }
 
   async function addIssue(issue: Omit<Issue, "id">) {
     if (!user) return;
-
-    // 1. Save the issue to Firestore
     await addDoc(collection(db, "issues"), {
       ...issue,
       reportedBy: user.uid,
-      createdAt: serverTimestamp(),
+      reportedByName: user.name,
+      createdAt: serverTimestamp()
     });
-
-    // 2. Credit points and increment reportsFiled on the user's profile
-    const userRef = doc(db, "users", user.uid);
-    await updateDoc(userRef, {
-      points: increment(POINTS_PER_REPORT),
-      reportsFiled: increment(1),
-    });
+    const newPoints = (user.points || 0) + 50;
+    const newReportsFiled = (user.reportsFiled || 0) + 1;
+    await updateUserProfile(user.uid, { points: newPoints, reportsFiled: newReportsFiled });
+    setUser(u => u ? { ...u, points: newPoints, reportsFiled: newReportsFiled } : u);
   }
 
   async function upvoteIssue(id: string) {
@@ -100,29 +89,32 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }
 
   async function updateIssueStatus(id: string, status: Issue["status"]) {
-    if (!user) return;
-
-    // Only allow the issue reporter to move their own cards
-    const issue = issues.find(i => i.id === id);
-    if (!issue) return;
-    if (issue.reportedBy !== user.uid) return;
-
     await updateDoc(doc(db, "issues", id), { status });
+  }
 
-    // If an issue is resolved, credit the reporter's reportsResolved count
-    if (status === "resolved") {
-      const reporterRef = doc(db, "users", issue.reportedBy);
-      const reporterSnap = await getDoc(reporterRef);
-      if (reporterSnap.exists()) {
-        await updateDoc(reporterRef, { reportsResolved: increment(1) });
-      }
+  async function reportFakeIssue(id: string, reason: string) {
+    const ref = doc(db, "issues", id);
+    const current = issues.find(i => i.id === id);
+    if (current) {
+      const reports = (current as any).fakeReports || [];
+      await updateDoc(ref, {
+        fakeReports: [...reports, { by: user?.uid, reason, at: new Date().toISOString() }]
+      });
     }
+  }
+
+  async function updateProfile(data: { name?: string; photoURL?: string }) {
+    if (!user) return;
+    await updateUserProfile(user.uid, data);
+    setUser(u => u ? { ...u, ...data } : u);
   }
 
   return (
     <AppContext.Provider value={{
       user, firebaseUser, loading, issues,
-      loginWithGoogle, logout, addIssue, upvoteIssue, updateIssueStatus
+      loginWithGoogle, loginWithGithub, logout,
+      addIssue, upvoteIssue, updateIssueStatus,
+      reportFakeIssue, updateProfile
     }}>
       {children}
     </AppContext.Provider>
