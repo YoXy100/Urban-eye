@@ -368,40 +368,61 @@ export default function MapView() {
           100% { transform: scale(2.5); opacity: 0;   }
         }
 
-        /* ── individual cloud shapes drifting ── */
+        /* ── individual cloud masses drifting (subtle parallax, edges already broken up by turbulence filters) ── */
         @keyframes cloudDrift1 {
-          0%,100% { transform: translate(-10px,  0px) scale(1);    }
-          50%      { transform: translate( 14px, -8px) scale(1.05); }
+          0%,100% { transform: translate(-8px,  0px) scale(1);     }
+          50%      { transform: translate( 10px, -6px) scale(1.04); }
         }
         @keyframes cloudDrift2 {
-          0%,100% { transform: translate( 12px,  0px) scale(1);    }
-          50%      { transform: translate(-16px,  9px) scale(0.96); }
+          0%,100% { transform: translate( 9px,  0px) scale(1);     }
+          50%      { transform: translate(-12px,  7px) scale(0.97); }
         }
         @keyframes cloudDrift3 {
-          0%,100% { transform: translate(  0px, -5px) scale(1);    }
-          50%      { transform: translate(  9px,  7px) scale(1.04); }
+          0%,100% { transform: translate(  0px, -4px) scale(1);    }
+          50%      { transform: translate(  7px,  5px) scale(1.03); }
         }
         @keyframes cloudDrift4 {
-          0%,100% { transform: translate(-14px,  5px) scale(1);    }
-          60%      { transform: translate(  7px, -9px) scale(0.95); }
+          0%,100% { transform: translate(-10px,  4px) scale(1);    }
+          60%      { transform: translate(  5px, -7px) scale(0.96); }
         }
         @keyframes cloudDrift5 {
-          0%,100% { transform: translate(  6px, -3px) scale(1);    }
-          45%      { transform: translate(-10px,  5px) scale(1.03); }
+          0%,100% { transform: translate(  5px, -2px) scale(1);    }
+          45%      { transform: translate(-8px,  4px) scale(1.02); }
         }
 
-        /* ── whole overlay fades + scales like a real zoom through clouds ── */
+        /* ── whole overlay: a continuous fly-through arc instead of a flat fade ──
+           scale, blur and brightness all evolve together so it reads as moving
+           THROUGH a volume of cloud rather than a sprite fading in and out ── */
         @keyframes cloudZoomIn {
-          0%   { opacity: 0;    transform: scale(0.70); filter: blur(0px);  }
-          18%  { opacity: 1;    transform: scale(1.00); filter: blur(0px);  }
-          70%  { opacity: 1;    transform: scale(1.00); filter: blur(0px);  }
-          100% { opacity: 0;    transform: scale(1.35); filter: blur(6px);  }
+          0%   { opacity: 0;    transform: scale(0.6);  filter: blur(1px)  brightness(1)    saturate(1);   }
+          14%  { opacity: 1;    transform: scale(0.9);  filter: blur(0px)  brightness(1.1)  saturate(1.05); }
+          48%  { opacity: 1;    transform: scale(1.22); filter: blur(0px)  brightness(1.18) saturate(1.1);  }
+          78%  { opacity: 0.85; transform: scale(1.68); filter: blur(4px)  brightness(1.05) saturate(1);    }
+          100% { opacity: 0;    transform: scale(2.1);  filter: blur(13px) brightness(1)    saturate(1);   }
         }
         @keyframes cloudZoomOut {
-          0%   { opacity: 0;    transform: scale(1.35); filter: blur(6px);  }
-          18%  { opacity: 1;    transform: scale(1.00); filter: blur(0px);  }
-          70%  { opacity: 1;    transform: scale(1.00); filter: blur(0px);  }
-          100% { opacity: 0;    transform: scale(0.70); filter: blur(0px);  }
+          0%   { opacity: 0;    transform: scale(2.1);  filter: blur(13px) brightness(1)    saturate(1);   }
+          22%  { opacity: 0.85; transform: scale(1.68); filter: blur(4px)  brightness(1.05) saturate(1);    }
+          52%  { opacity: 1;    transform: scale(1.22); filter: blur(0px)  brightness(1.18) saturate(1.1);  }
+          86%  { opacity: 1;    transform: scale(0.9);  filter: blur(0px)  brightness(1.1)  saturate(1.05); }
+          100% { opacity: 0;    transform: scale(0.6);  filter: blur(1px)  brightness(1)    saturate(1);   }
+        }
+
+        /* ── brief inner flash as the camera passes through the densest part of the cloud ── */
+        @keyframes cloudCoreFlash {
+          0%, 100% { opacity: 0; }
+          42%      { opacity: 0; }
+          52%      { opacity: 0.85; }
+          64%      { opacity: 0.25; }
+          76%      { opacity: 0; }
+        }
+
+        /* ── thin streaks of light that race past, selling a sense of speed ── */
+        @keyframes cloudStreak {
+          0%   { opacity: 0;    transform: translateX(-70px) scaleX(0.5); }
+          38%  { opacity: 0.6;  transform: translateX(0px)   scaleX(1.2); }
+          70%  { opacity: 0.25; transform: translateX(60px)  scaleX(1.6); }
+          100% { opacity: 0;    transform: translateX(130px) scaleX(1.9); }
         }
 
         /* ── veil that covers the map during tile swap ── */
@@ -409,9 +430,12 @@ export default function MapView() {
           position: absolute; inset: 0; z-index: 990; pointer-events: none;
           opacity: 0;
         }
-        .cloud-layer.zooming-in  { animation: cloudZoomIn  1.1s cubic-bezier(0.22,1,0.36,1) forwards; }
-        .cloud-layer.zooming-out { animation: cloudZoomOut 1.1s cubic-bezier(0.22,1,0.36,1) forwards; }
+        .cloud-layer.zooming-in  { animation: cloudZoomIn  1.3s cubic-bezier(0.16,1,0.3,1) forwards; }
+        .cloud-layer.zooming-out { animation: cloudZoomOut 1.3s cubic-bezier(0.16,1,0.3,1) forwards; }
         .cloud-svg { width: 100%; height: 100%; }
+        .cloud-flash { mix-blend-mode: screen; animation: cloudCoreFlash 1.3s ease-out forwards; }
+        .cloud-streak { mix-blend-mode: screen; animation: cloudStreak 1.1s ease-out 0.1s forwards; }
+        .cloud-layer.zooming-out .cloud-streak { animation-direction: reverse; }
 
         /* ── leaflet overrides ── */
         .leaflet-dark-tooltip {
@@ -565,106 +589,156 @@ export default function MapView() {
               <div key={cloudAnim + Date.now()} className={`cloud-layer ${cloudAnim}`}>
                 <svg className="cloud-svg" viewBox="0 0 900 560" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
                   <defs>
-                    {/* Soft atmospheric blur levels */}
-                    <filter id="cb1" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="28"/></filter>
-                    <filter id="cb2" x="-25%" y="-25%" width="150%" height="150%"><feGaussianBlur stdDeviation="16"/></filter>
-                    <filter id="cb3" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="36"/></filter>
-                    <filter id="cb4" x="-15%" y="-15%" width="130%" height="130%"><feGaussianBlur stdDeviation="9"/></filter>
+                    {/* Wide ambient blur for the background haze — generous region so the falloff
+                        never gets clipped into a hard rectangle */}
+                    <filter id="ambBlur" x="-100%" y="-100%" width="300%" height="300%">
+                      <feGaussianBlur stdDeviation="55"/>
+                    </filter>
 
-                    {/* Cloud white-to-transparent gradients */}
-                    <radialGradient id="cg1" cx="50%" cy="45%" r="50%">
-                      <stop offset="0%"   stopColor="#eef4ff" stopOpacity="0.98"/>
-                      <stop offset="40%"  stopColor="#d0e2f8" stopOpacity="0.80"/>
-                      <stop offset="75%"  stopColor="#aac4ec" stopOpacity="0.45"/>
-                      <stop offset="100%" stopColor="#88aada" stopOpacity="0"/>
+                    {/* Turbulence-warped cloud filters — these bend the clean ellipse edges into
+                        irregular, wispy silhouettes instead of flat geometric blobs, and use very
+                        generous filter regions so the soft blur is never clipped (the old "blocky"
+                        edges came from tight filter regions cutting the blur off mid-falloff) */}
+                    <filter id="wispBig" x="-140%" y="-140%" width="380%" height="380%" colorInterpolationFilters="sRGB">
+                      <feTurbulence type="fractalNoise" baseFrequency="0.006 0.012" numOctaves="3" seed="11" result="n"/>
+                      <feDisplacementMap in="SourceGraphic" in2="n" scale="95" xChannelSelector="R" yChannelSelector="G" result="d"/>
+                      <feGaussianBlur in="d" stdDeviation="20"/>
+                    </filter>
+                    <filter id="wispMid" x="-130%" y="-130%" width="360%" height="360%" colorInterpolationFilters="sRGB">
+                      <feTurbulence type="fractalNoise" baseFrequency="0.011 0.019" numOctaves="3" seed="5" result="n"/>
+                      <feDisplacementMap in="SourceGraphic" in2="n" scale="62" xChannelSelector="R" yChannelSelector="G" result="d"/>
+                      <feGaussianBlur in="d" stdDeviation="11"/>
+                    </filter>
+                    <filter id="wispFine" x="-120%" y="-120%" width="340%" height="340%" colorInterpolationFilters="sRGB">
+                      <feTurbulence type="fractalNoise" baseFrequency="0.02 0.034" numOctaves="2" seed="2" result="n"/>
+                      <feDisplacementMap in="SourceGraphic" in2="n" scale="38" xChannelSelector="R" yChannelSelector="G" result="d"/>
+                      <feGaussianBlur in="d" stdDeviation="5"/>
+                    </filter>
+                    <filter id="streakBlur" x="-150%" y="-150%" width="400%" height="400%">
+                      <feGaussianBlur stdDeviation="4"/>
+                    </filter>
+                    {/* Very fine grain — breaks up the smooth gradients so they read as soft
+                        vapour rather than flat printed shapes */}
+                    <filter id="grainFilter" x="0%" y="0%" width="100%" height="100%">
+                      <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed="9" stitchTiles="stitch" result="n"/>
+                      <feColorMatrix in="n" type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.045 0"/>
+                    </filter>
+
+                    {/* Cloud gradients — many small stops so the alpha falloff is a smooth
+                        curve instead of a few hard jumps (hard jumps + blur = visible banding) */}
+                    <radialGradient id="cgWarm" cx="50%" cy="38%" r="50%">
+                      <stop offset="0%"   stopColor="#ffffff" stopOpacity="0.95"/>
+                      <stop offset="18%"  stopColor="#f5f9ff" stopOpacity="0.88"/>
+                      <stop offset="36%"  stopColor="#e1ecfb" stopOpacity="0.72"/>
+                      <stop offset="55%"  stopColor="#c4d9f3" stopOpacity="0.52"/>
+                      <stop offset="72%"  stopColor="#a6c2e8" stopOpacity="0.30"/>
+                      <stop offset="88%"  stopColor="#8eaedd" stopOpacity="0.12"/>
+                      <stop offset="100%" stopColor="#82a4d6" stopOpacity="0"/>
                     </radialGradient>
-                    <radialGradient id="cg2" cx="50%" cy="50%" r="50%">
-                      <stop offset="0%"   stopColor="#ffffff" stopOpacity="0.92"/>
-                      <stop offset="45%"  stopColor="#ddeaf8" stopOpacity="0.70"/>
-                      <stop offset="80%"  stopColor="#b4ccec" stopOpacity="0.35"/>
-                      <stop offset="100%" stopColor="#90b0e0" stopOpacity="0"/>
-                    </radialGradient>
-                    <radialGradient id="cg3" cx="48%" cy="42%" r="50%">
-                      <stop offset="0%"   stopColor="#f0f6ff" stopOpacity="0.88"/>
-                      <stop offset="50%"  stopColor="#c8dcf4" stopOpacity="0.60"/>
-                      <stop offset="100%" stopColor="#a4bce4" stopOpacity="0"/>
-                    </radialGradient>
-                    <radialGradient id="cg4" cx="50%" cy="48%" r="50%">
-                      <stop offset="0%"   stopColor="#e8f2ff" stopOpacity="0.82"/>
-                      <stop offset="55%"  stopColor="#bed4f0" stopOpacity="0.52"/>
-                      <stop offset="100%" stopColor="#98b4e0" stopOpacity="0"/>
+                    <radialGradient id="cgCool" cx="50%" cy="58%" r="50%">
+                      <stop offset="0%"   stopColor="#eef4ff" stopOpacity="0.85"/>
+                      <stop offset="20%"  stopColor="#dbe7fa" stopOpacity="0.76"/>
+                      <stop offset="40%"  stopColor="#bdd2f0" stopOpacity="0.60"/>
+                      <stop offset="60%"  stopColor="#9fbbe4" stopOpacity="0.42"/>
+                      <stop offset="80%"  stopColor="#83a4d6" stopOpacity="0.18"/>
+                      <stop offset="100%" stopColor="#7295c9" stopOpacity="0"/>
                     </radialGradient>
                     {/* Atmospheric haze — deep blue tint */}
                     <radialGradient id="haze" cx="50%" cy="50%" r="50%">
                       <stop offset="0%"   stopColor="#1a3a6e" stopOpacity="0.18"/>
+                      <stop offset="50%"  stopColor="#142e58" stopOpacity="0.08"/>
                       <stop offset="100%" stopColor="#0a1830" stopOpacity="0"/>
                     </radialGradient>
+                    {/* Bright core flash — the brief whiteout as the camera passes the densest part */}
+                    <radialGradient id="coreFlash" cx="50%" cy="50%" r="50%">
+                      <stop offset="0%"   stopColor="#ffffff" stopOpacity="0.95"/>
+                      <stop offset="30%"  stopColor="#f0f6ff" stopOpacity="0.55"/>
+                      <stop offset="65%"  stopColor="#dce8fb" stopOpacity="0.18"/>
+                      <stop offset="100%" stopColor="#dce8fb" stopOpacity="0"/>
+                    </radialGradient>
+                    <linearGradient id="streakGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%"   stopColor="#ffffff" stopOpacity="0"/>
+                      <stop offset="50%"  stopColor="#eaf3ff" stopOpacity="0.9"/>
+                      <stop offset="100%" stopColor="#ffffff" stopOpacity="0"/>
+                    </linearGradient>
                   </defs>
 
                   {/* === Atmospheric background haze === */}
-                  <ellipse cx="450" cy="280" rx="500" ry="320" fill="url(#haze)" filter="url(#cb3)" />
+                  <ellipse cx="450" cy="280" rx="480" ry="300" fill="url(#haze)" filter="url(#ambBlur)" />
 
-                  {/* === Cloud 1 — top-left hero cloud === */}
-                  <g style={{ animation: "cloudDrift1 7s ease-in-out infinite", transformOrigin: "195px 115px" }}>
-                    <ellipse cx="195" cy="140" rx="240" ry="125" fill="url(#cg1)" filter="url(#cb1)" />
-                    <ellipse cx="155" cy="105" rx="155" ry="88"  fill="url(#cg2)" filter="url(#cb2)" />
-                    <ellipse cx="235" cy="88"  rx="115" ry="66"  fill="url(#cg1)" filter="url(#cb2)" />
-                    <ellipse cx="290" cy="112" rx="80"  ry="50"  fill="url(#cg3)" filter="url(#cb4)" />
-                    <ellipse cx="120" cy="128" rx="70"  ry="42"  fill="url(#cg2)" filter="url(#cb4)" />
+                  {/* === Cloud masses — each is a soft warm/cool gradient pushed through a
+                      turbulence displacement, so the silhouette is fluffy and irregular rather
+                      than a clean ellipse. mix-blend-mode:screen makes them glow over the dark
+                      map like light, instead of sitting on top like flat cut-out shapes. === */}
+                  <g style={{ mixBlendMode: "screen" }}>
+                    <g style={{ animation: "cloudDrift1 7s ease-in-out infinite", transformOrigin: "195px 115px" }}>
+                      <ellipse cx="195" cy="140" rx="230" ry="120" fill="url(#cgWarm)" filter="url(#wispBig)" />
+                      <ellipse cx="150" cy="100" rx="150" ry="85"  fill="url(#cgWarm)" filter="url(#wispMid)" />
+                      <ellipse cx="240" cy="85"  rx="110" ry="62"  fill="url(#cgCool)" filter="url(#wispMid)" />
+                      <ellipse cx="120" cy="128" rx="68"  ry="40"  fill="url(#cgWarm)" filter="url(#wispFine)" />
+                    </g>
+
+                    <g style={{ animation: "cloudDrift2 9s ease-in-out infinite", transformOrigin: "740px 72px" }}>
+                      <ellipse cx="740" cy="85"  rx="200" ry="95"  fill="url(#cgCool)" filter="url(#wispBig)" />
+                      <ellipse cx="785" cy="55"  rx="120" ry="65"  fill="url(#cgWarm)" filter="url(#wispMid)" />
+                      <ellipse cx="695" cy="62"  rx="95"  ry="52"  fill="url(#cgCool)" filter="url(#wispMid)" />
+                      <ellipse cx="838" cy="78"  rx="62"  ry="36"  fill="url(#cgWarm)" filter="url(#wispFine)" />
+                    </g>
+
+                    <g style={{ animation: "cloudDrift3 12s ease-in-out infinite", transformOrigin: "450px 258px" }}>
+                      <ellipse cx="450" cy="265" rx="290" ry="92"  fill="url(#cgCool)" filter="url(#wispBig)" />
+                      <ellipse cx="392" cy="246" rx="168" ry="55"  fill="url(#cgWarm)" filter="url(#wispMid)" />
+                      <ellipse cx="518" cy="240" rx="135" ry="50"  fill="url(#cgWarm)" filter="url(#wispMid)" />
+                      <ellipse cx="338" cy="258" rx="85"  ry="36"  fill="url(#cgCool)" filter="url(#wispFine)" />
+                      <ellipse cx="588" cy="256" rx="76"  ry="32"  fill="url(#cgCool)" filter="url(#wispFine)" />
+                    </g>
+
+                    <g style={{ animation: "cloudDrift4 8.5s ease-in-out infinite", transformOrigin: "145px 445px" }}>
+                      <ellipse cx="145" cy="450" rx="215" ry="105" fill="url(#cgCool)" filter="url(#wispBig)" />
+                      <ellipse cx="183" cy="416" rx="128" ry="68"  fill="url(#cgWarm)" filter="url(#wispMid)" />
+                      <ellipse cx="88"  cy="438" rx="85"  ry="48"  fill="url(#cgWarm)" filter="url(#wispMid)" />
+                      <ellipse cx="228" cy="433" rx="70"  ry="40"  fill="url(#cgCool)" filter="url(#wispFine)" />
+                    </g>
+
+                    <g style={{ animation: "cloudDrift5 10s ease-in-out infinite 1.2s", transformOrigin: "775px 468px" }}>
+                      <ellipse cx="775" cy="472" rx="195" ry="95"  fill="url(#cgWarm)" filter="url(#wispBig)" />
+                      <ellipse cx="733" cy="446" rx="108" ry="56"  fill="url(#cgCool)" filter="url(#wispMid)" />
+                      <ellipse cx="828" cy="456" rx="118" ry="52"  fill="url(#cgWarm)" filter="url(#wispMid)" />
+                      <ellipse cx="868" cy="474" rx="56"  ry="32"  fill="url(#cgCool)" filter="url(#wispFine)" />
+                    </g>
+
+                    <g style={{ animation: "cloudDrift2 13s ease-in-out infinite 2.4s", transformOrigin: "825px 302px" }}>
+                      <ellipse cx="825" cy="305" rx="138" ry="62"  fill="url(#cgCool)" filter="url(#wispMid)" />
+                      <ellipse cx="857" cy="286" rx="83"  ry="42"  fill="url(#cgWarm)" filter="url(#wispMid)" />
+                      <ellipse cx="788" cy="313" rx="60"  ry="30"  fill="url(#cgCool)" filter="url(#wispFine)" />
+                    </g>
+
+                    <g style={{ animation: "cloudDrift1 10s ease-in-out infinite 3s", transformOrigin: "460px 48px" }}>
+                      <ellipse cx="460" cy="50"  rx="160" ry="48"  fill="url(#cgWarm)" filter="url(#wispMid)" />
+                      <ellipse cx="420" cy="36"  rx="94"  ry="32"  fill="url(#cgCool)" filter="url(#wispFine)" />
+                      <ellipse cx="508" cy="40"  rx="80"  ry="28"  fill="url(#cgWarm)" filter="url(#wispFine)" />
+                    </g>
                   </g>
 
-                  {/* === Cloud 2 — top-right === */}
-                  <g style={{ animation: "cloudDrift2 9s ease-in-out infinite", transformOrigin: "740px 72px" }}>
-                    <ellipse cx="740" cy="85"  rx="210" ry="100" fill="url(#cg2)" filter="url(#cb1)" />
-                    <ellipse cx="785" cy="58"  rx="125" ry="68"  fill="url(#cg1)" filter="url(#cb2)" />
-                    <ellipse cx="695" cy="65"  rx="100" ry="55"  fill="url(#cg3)" filter="url(#cb2)" />
-                    <ellipse cx="840" cy="80"  rx="65"  ry="38"  fill="url(#cg4)" filter="url(#cb4)" />
+                  {/* === Core flash — the brief brightening as the camera passes through the
+                      thickest part of the cloud, mid-transition === */}
+                  <circle cx="450" cy="270" r="270" fill="url(#coreFlash)" className="cloud-flash" />
+
+                  {/* === Speed streaks — thin racing highlights that sell the sense of motion === */}
+                  <g className="cloud-streak" style={{ transformOrigin: "230px 175px", animationDelay: "0s" }}>
+                    <rect x="40" y="172" width="260" height="5" rx="2.5" fill="url(#streakGrad)" filter="url(#streakBlur)" transform="rotate(-14 170 175)" />
+                  </g>
+                  <g className="cloud-streak" style={{ transformOrigin: "650px 360px", animationDelay: "0.06s" }}>
+                    <rect x="520" y="358" width="300" height="5" rx="2.5" fill="url(#streakGrad)" filter="url(#streakBlur)" transform="rotate(10 670 360)" />
+                  </g>
+                  <g className="cloud-streak" style={{ transformOrigin: "420px 400px", animationDelay: "0.12s" }}>
+                    <rect x="280" y="398" width="220" height="4" rx="2" fill="url(#streakGrad)" filter="url(#streakBlur)" transform="rotate(-5 390 400)" />
                   </g>
 
-                  {/* === Cloud 3 — center wispy band === */}
-                  <g style={{ animation: "cloudDrift3 12s ease-in-out infinite", transformOrigin: "450px 258px" }}>
-                    <ellipse cx="450" cy="265" rx="300" ry="95"  fill="url(#cg4)" filter="url(#cb3)" />
-                    <ellipse cx="395" cy="248" rx="175" ry="58"  fill="url(#cg1)" filter="url(#cb1)" />
-                    <ellipse cx="520" cy="242" rx="140" ry="52"  fill="url(#cg2)" filter="url(#cb2)" />
-                    <ellipse cx="340" cy="260" rx="90"  ry="38"  fill="url(#cg3)" filter="url(#cb4)" />
-                    <ellipse cx="590" cy="258" rx="80"  ry="34"  fill="url(#cg4)" filter="url(#cb4)" />
-                  </g>
-
-                  {/* === Cloud 4 — bottom-left === */}
-                  <g style={{ animation: "cloudDrift4 8.5s ease-in-out infinite", transformOrigin: "145px 445px" }}>
-                    <ellipse cx="145" cy="450" rx="225" ry="110" fill="url(#cg3)" filter="url(#cb1)" />
-                    <ellipse cx="185" cy="418" rx="135" ry="72"  fill="url(#cg1)" filter="url(#cb2)" />
-                    <ellipse cx="90"  cy="440" rx="90"  ry="50"  fill="url(#cg2)" filter="url(#cb2)" />
-                    <ellipse cx="230" cy="435" rx="75"  ry="42"  fill="url(#cg4)" filter="url(#cb4)" />
-                  </g>
-
-                  {/* === Cloud 5 — bottom-right === */}
-                  <g style={{ animation: "cloudDrift5 10s ease-in-out infinite 1.2s", transformOrigin: "775px 468px" }}>
-                    <ellipse cx="775" cy="472" rx="205" ry="100" fill="url(#cg2)" filter="url(#cb1)" />
-                    <ellipse cx="735" cy="448" rx="115" ry="60"  fill="url(#cg4)" filter="url(#cb2)" />
-                    <ellipse cx="830" cy="458" rx="125" ry="56"  fill="url(#cg1)" filter="url(#cb2)" />
-                    <ellipse cx="870" cy="475" rx="60"  ry="34"  fill="url(#cg3)" filter="url(#cb4)" />
-                  </g>
-
-                  {/* === Cloud 6 — mid-right wisp === */}
-                  <g style={{ animation: "cloudDrift2 13s ease-in-out infinite 2.4s", transformOrigin: "825px 302px" }}>
-                    <ellipse cx="825" cy="305" rx="145" ry="65"  fill="url(#cg3)" filter="url(#cb3)" />
-                    <ellipse cx="858" cy="288" rx="88"  ry="44"  fill="url(#cg2)" filter="url(#cb2)" />
-                    <ellipse cx="790" cy="315" rx="65"  ry="32"  fill="url(#cg4)" filter="url(#cb4)" />
-                  </g>
-
-                  {/* === Cloud 7 — top-center wisp === */}
-                  <g style={{ animation: "cloudDrift1 10s ease-in-out infinite 3s", transformOrigin: "460px 48px" }}>
-                    <ellipse cx="460" cy="50"  rx="170" ry="52"  fill="url(#cg1)" filter="url(#cb3)" />
-                    <ellipse cx="420" cy="38"  rx="100" ry="35"  fill="url(#cg2)" filter="url(#cb2)" />
-                    <ellipse cx="510" cy="42"  rx="85"  ry="30"  fill="url(#cg3)" filter="url(#cb4)" />
-                  </g>
-
-                  {/* === Subtle full-canvas atmosphere veil === */}
-                  <rect width="900" height="560" fill="white" opacity="0.06"/>
-                  <rect width="900" height="560"
-                    fill="url(#haze)" opacity="0.4"
-                    style={{ mixBlendMode: "multiply" }}/>
+                  {/* === Fine grain to break up the gradients into soft vapour, not flat shapes === */}
+                  <rect width="900" height="560" filter="url(#grainFilter)" style={{ mixBlendMode: "screen" }} />
+                  {/* === Subtle cool tint pass === */}
+                  <rect width="900" height="560" fill="url(#haze)" opacity="0.35" style={{ mixBlendMode: "multiply" }} />
                 </svg>
               </div>
             )}
