@@ -8,6 +8,7 @@ import {
 } from "firebase/firestore";
 import { auth, db, googleProvider, githubProvider } from "../lib/firebase";
 import { getOrCreateUserProfile, UserProfile, updateUserProfile } from "../lib/userService";
+import { logActivity, subscribeToActivities, UserActivity } from "../lib/activityService";
 import { Issue } from "../data/mockData";
 
 interface AppContextType {
@@ -15,6 +16,7 @@ interface AppContextType {
   firebaseUser: FirebaseUser | null;
   loading: boolean;
   issues: Issue[];
+  activities: UserActivity[];
   loginWithGoogle: () => Promise<void>;
   loginWithGithub: () => Promise<void>;
   logout: () => Promise<void>;
@@ -33,6 +35,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
   const [user, setUser] = useState<UserProfile | null>(null);
   const [issues, setIssues] = useState<Issue[]>([]);
+  const [activities, setActivities] = useState<UserActivity[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -44,12 +47,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       } else {
         setFirebaseUser(null);
         setUser(null);
+        setActivities([]);
       }
       setLoading(false);
     });
     return unsub;
   }, []);
 
+  // Subscribe to issues
   useEffect(() => {
     const q = query(collection(db, "issues"), orderBy("createdAt", "desc"));
     const unsub = onSnapshot(q, (snap) => {
@@ -57,6 +62,16 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     });
     return unsub;
   }, []);
+
+  // Subscribe to current user's activity feed (for heatmap)
+  useEffect(() => {
+    if (!user?.uid) {
+      setActivities([]);
+      return;
+    }
+    const unsub = subscribeToActivities(user.uid, setActivities);
+    return unsub;
+  }, [user?.uid]);
 
   async function loginWithGoogle() {
     await signInWithPopup(auth, googleProvider);
@@ -72,7 +87,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   async function addIssue(issue: Omit<Issue, "id">) {
     if (!user) return;
-    await addDoc(collection(db, "issues"), {
+    const docRef = await addDoc(collection(db, "issues"), {
       ...issue,
       reportedBy: user.uid,
       reportedByName: user.name,
@@ -82,26 +97,44 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const newReportsFiled = (user.reportsFiled || 0) + 1;
     await updateUserProfile(user.uid, { points: newPoints, reportsFiled: newReportsFiled });
     setUser(u => u ? { ...u, points: newPoints, reportsFiled: newReportsFiled } : u);
+
+    // Log activity
+    logActivity(user.uid, "issue_reported", `Reported: ${issue.title}`, docRef.id);
   }
 
   // Deletes the issue doc and deducts 50 points from the poster's profile.
   async function deleteIssue(id: string) {
     if (!user) return;
+    const issue = issues.find(i => i.id === id);
     await deleteDoc(doc(db, "issues", id));
     const newPoints = Math.max(0, (user.points || 0) - 50);
     const newReportsFiled = Math.max(0, (user.reportsFiled || 0) - 1);
     await updateUserProfile(user.uid, { points: newPoints, reportsFiled: newReportsFiled });
     setUser(u => u ? { ...u, points: newPoints, reportsFiled: newReportsFiled } : u);
+
+    // Log activity
+    logActivity(user.uid, "issue_deleted", `Deleted: ${issue?.title || "an issue"}`, id);
   }
 
   async function upvoteIssue(id: string) {
+    if (!user) return;
     const ref = doc(db, "issues", id);
     const current = issues.find(i => i.id === id);
-    if (current) await updateDoc(ref, { votes: (current.votes || 0) + 1 });
+    if (current) {
+      await updateDoc(ref, { votes: (current.votes || 0) + 1 });
+
+      // Log activity
+      logActivity(user.uid, "issue_upvoted", `Upvoted: ${current.title}`, id);
+    }
   }
 
   async function updateIssueStatus(id: string, status: Issue["status"]) {
+    if (!user) return;
     await updateDoc(doc(db, "issues", id), { status });
+    const issue = issues.find(i => i.id === id);
+
+    // Log activity
+    logActivity(user.uid, "status_changed", `Changed status to ${status.replace("_", " ")}: ${issue?.title || "an issue"}`, id);
   }
 
   async function reportFakeIssue(id: string, reason: string) {
@@ -112,6 +145,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       await updateDoc(ref, {
         fakeReports: [...reports, { by: user?.uid, reason, at: new Date().toISOString() }]
       });
+
+      // Log activity
+      if (user) logActivity(user.uid, "fake_reported", `Reported fake: ${current.title}`, id);
     }
   }
 
@@ -119,6 +155,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     if (!user) return;
     await updateUserProfile(user.uid, data);
     setUser(u => u ? { ...u, ...data } : u);
+
+    // Log activity
+    logActivity(user.uid, "profile_updated", "Updated profile");
   }
 
   async function redeemReward(cost: number): Promise<string> {
@@ -128,12 +167,16 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const newPoints = user.points - cost;
     await updateUserProfile(user.uid, { points: newPoints });
     setUser(u => u ? { ...u, points: newPoints } : u);
+
+    // Log activity
+    logActivity(user.uid, "reward_redeemed", `Redeemed reward for ${cost} points`);
+
     return code;
   }
 
   return (
     <AppContext.Provider value={{
-      user, firebaseUser, loading, issues,
+      user, firebaseUser, loading, issues, activities,
       loginWithGoogle, loginWithGithub, logout,
       addIssue, deleteIssue, upvoteIssue, updateIssueStatus,
       reportFakeIssue, updateProfile, redeemReward

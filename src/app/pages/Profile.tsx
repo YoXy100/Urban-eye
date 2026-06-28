@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { useApp } from "../context/AppContext";
 import { ACTIVITY_LOG, MONTHLY_DATA, Issue } from "../data/mockData";
+import { UserActivity } from "../lib/activityService";
 
 const RANK_TIERS_DATA = [
   { name: "Newcomer",       minPoints: 0,     maxPoints: 500,   color: "#64748b", icon: "🌱" },
@@ -30,6 +31,16 @@ const DEFAULT_BADGES = [
   { id: "b6", name: "City Architect",     description: "Report 100 issues",                 icon: "🏛️", unlocked: false, progress: 0,    total: 100   },
 ];
 
+const ACTIVITY_ICONS: Record<string, string> = {
+  issue_reported: "📍",
+  issue_deleted: "🗑️",
+  issue_upvoted: "⬆️",
+  status_changed: "🔄",
+  fake_reported: "🚩",
+  reward_redeemed: "🎁",
+  profile_updated: "✏️",
+};
+
 // ── Heatmap helpers ──────────────────────────────────────────────────────────
 
 interface HeatmapEntry {
@@ -39,9 +50,19 @@ interface HeatmapEntry {
   date: Date;
 }
 
-/** Build 52-week × 7-day heatmap grid from an array of issues. */
-function buildHeatmapFromIssues(issues: Issue[]): { grid: HeatmapEntry[]; monthLabels: { label: string; weekIdx: number }[] } {
+/** Format a Date to local YYYY-MM-DD (avoids UTC timezone drift). */
+function toLocalDateKey(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+/** Build 52-week × 7-day heatmap grid from the user's activity log. */
+function buildHeatmapFromActivities(activities: UserActivity[]): { grid: HeatmapEntry[]; monthLabels: { label: string; weekIdx: number }[] } {
   const today = new Date();
+  today.setHours(23, 59, 59, 999); // include all of today
+
   // Start of heatmap: 52 weeks ago, aligned to the most recent Sunday
   const startOfWeek = new Date(today);
   startOfWeek.setDate(today.getDate() - today.getDay()); // most recent Sunday
@@ -49,18 +70,12 @@ function buildHeatmapFromIssues(issues: Issue[]): { grid: HeatmapEntry[]; monthL
   heatmapStart.setDate(heatmapStart.getDate() - 51 * 7); // go back 51 more weeks
   heatmapStart.setHours(0, 0, 0, 0);
 
-  // Count issues per calendar date
+  // Count activities per local calendar date
   const countMap = new Map<string, number>();
-  for (const issue of issues) {
-    // Issues have reportedAt (string) or createdAt (Firestore Timestamp)
-    let dateStr = issue.reportedAt;
-    if (!dateStr && (issue as any).createdAt) {
-      const ts = (issue as any).createdAt;
-      dateStr = ts.toDate ? ts.toDate().toISOString().slice(0, 10) : new Date(ts).toISOString().slice(0, 10);
-    }
-    if (!dateStr) continue;
-    const key = dateStr.slice(0, 10); // YYYY-MM-DD
-    countMap.set(key, (countMap.get(key) || 0) + 1);
+  for (const act of activities) {
+    // Each activity has a `date` field in YYYY-MM-DD format
+    const key = act.date;
+    if (key) countMap.set(key, (countMap.get(key) || 0) + 1);
   }
 
   const grid: HeatmapEntry[] = [];
@@ -68,15 +83,17 @@ function buildHeatmapFromIssues(issues: Issue[]): { grid: HeatmapEntry[]; monthL
   const seenMonths = new Set<string>();
   const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
+  const now = new Date();
+
   for (let week = 0; week < 52; week++) {
     for (let day = 0; day < 7; day++) {
       const cellDate = new Date(heatmapStart);
       cellDate.setDate(heatmapStart.getDate() + week * 7 + day);
 
       // Don't include future dates
-      const isFuture = cellDate > today;
+      const isFuture = cellDate > now && toLocalDateKey(cellDate) !== toLocalDateKey(now);
 
-      const key = cellDate.toISOString().slice(0, 10);
+      const key = toLocalDateKey(cellDate);
       grid.push({
         week,
         day,
@@ -461,7 +478,7 @@ function IssueRow({ issue }: { issue: Issue }) {
 
 // ── Main Profile Page ─────────────────────────────────────────────────────────
 export default function Profile() {
-  const { user, issues, logout } = useApp();
+  const { user, issues, activities, logout } = useApp();
   const navigate = useNavigate();
 
   if (!user) return null;
@@ -477,10 +494,10 @@ export default function Profile() {
   const resolved   = myIssues.filter(i => i.status === "resolved");
   const inProgress = myIssues.filter(i => i.status === "in_progress");
 
-  // Build heatmap from user's actual issues
+  // Build heatmap from user's activity log (reports, upvotes, status changes, etc.)
   const { grid: heatmapGrid, monthLabels } = useMemo(
-    () => buildHeatmapFromIssues(myIssues),
-    [myIssues]
+    () => buildHeatmapFromActivities(activities),
+    [activities]
   );
   const totalContributions = useMemo(
     () => heatmapGrid.reduce((sum, e) => sum + Math.max(0, e.count), 0),
@@ -772,7 +789,7 @@ export default function Profile() {
               <div className="relative">
                 <div className="absolute left-4 top-0 bottom-0 w-px bg-white/8" />
                 <div className="space-y-4">
-                  {ACTIVITY_LOG.map((entry, i) => (
+                  {(activities.length > 0 ? activities.slice(0, 10) : ACTIVITY_LOG).map((entry: any, i: number) => (
                     <motion.div
                       key={entry.id}
                       initial={{ opacity: 0, x: -12 }}
@@ -782,13 +799,13 @@ export default function Profile() {
                       className="flex gap-3 pl-2"
                     >
                       <div className="w-6 h-6 rounded-lg bg-white/8 border border-white/10 flex items-center justify-center flex-shrink-0 relative z-10 text-xs">
-                        {entry.icon}
+                        {entry.icon || ACTIVITY_ICONS[entry.type] || "📌"}
                       </div>
                       <div className="flex-1 min-w-0 pb-3">
-                        <p className="text-xs text-white font-medium leading-snug">{entry.title}</p>
+                        <p className="text-xs text-white font-medium leading-snug">{entry.label || entry.title}</p>
                         <div className="flex items-center gap-2 mt-1">
                           <p className="text-[10px] text-slate-500">{entry.date}</p>
-                          <span className="text-[10px] font-bold text-emerald-400">+{entry.points} pts</span>
+                          {entry.points && <span className="text-[10px] font-bold text-emerald-400">+{entry.points} pts</span>}
                         </div>
                       </div>
                     </motion.div>
