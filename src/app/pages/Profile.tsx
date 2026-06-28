@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { useApp } from "../context/AppContext";
 import { ACTIVITY_LOG, MONTHLY_DATA, Issue } from "../data/mockData";
-import { MONTHLY_DATA, Issue } from "../data/mockData";
+
 import { UserActivity } from "../lib/activityService";
 
 const RANK_TIERS_DATA = [
@@ -497,7 +497,7 @@ export default function Profile() {
     const now = new Date();
     const data = [];
 
-    
+
     // Go back 5 months + current month (6 months total)
     for (let i = 5; i >= 0; i--) {
       const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
@@ -825,33 +825,32 @@ export default function Profile() {
               {activities.length === 0 ? (
                 <p className="text-xs text-slate-500 text-center py-4">No activity yet.</p>
               ) : (
-              <div className="relative">
-                <div className="absolute left-4 top-0 bottom-0 w-px bg-white/8" />
-                <div className="space-y-4">
-                  {(activities.length > 0 ? activities.slice(0, 10) : ACTIVITY_LOG).map((entry: any, i: number) => (
-                  {(activities.length > 0 ? activities.slice(0, 10) : []).map((entry: any, i: number) => (
-                    <motion.div
-                      key={entry.id}
-                      initial={{ opacity: 0, x: -12 }}
-                      whileInView={{ opacity: 1, x: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ delay: i * 0.07 }}
-                      className="flex gap-3 pl-2"
-                    >
-                      <div className="w-6 h-6 rounded-lg bg-white/8 border border-white/10 flex items-center justify-center flex-shrink-0 relative z-10 text-xs">
-                        {entry.icon || ACTIVITY_ICONS[entry.type] || "📌"}
-                      </div>
-                      <div className="flex-1 min-w-0 pb-3">
-                        <p className="text-xs text-white font-medium leading-snug">{entry.label || entry.title}</p>
-                        <div className="flex items-center gap-2 mt-1">
-                          <p className="text-[10px] text-slate-500">{entry.date}</p>
-                          {entry.points && <span className="text-[10px] font-bold text-emerald-400">+{entry.points} pts</span>}
-                        </div>
-                      </div>
-                    </motion.div>
-                  ))}
+                <div className="relative">
+                  <div className="absolute left-4 top-0 bottom-0 w-px bg-white/8" />
+                  <div className="space-y-4">
+                    {(activities.length > 0 ? activities.slice(0, 10) : ACTIVITY_LOG).map((entry: any, i: number) => (
+                        <motion.div
+                          key={entry.id}
+                          initial={{ opacity: 0, x: -12 }}
+                          whileInView={{ opacity: 1, x: 0 }}
+                          viewport={{ once: true }}
+                          transition={{ delay: i * 0.07 }}
+                          className="flex gap-3 pl-2"
+                        >
+                          <div className="w-6 h-6 rounded-lg bg-white/8 border border-white/10 flex items-center justify-center flex-shrink-0 relative z-10 text-xs">
+                            {entry.icon || ACTIVITY_ICONS[entry.type] || "📌"}
+                          </div>
+                          <div className="flex-1 min-w-0 pb-3">
+                            <p className="text-xs text-white font-medium leading-snug">{entry.label || entry.title}</p>
+                            <div className="flex items-center gap-2 mt-1">
+                              <p className="text-[10px] text-slate-500">{entry.date}</p>
+                              {entry.points && <span className="text-[10px] font-bold text-emerald-400">+{entry.points} pts</span>}
+                            </div>
+                          </div>
+                        </motion.div>
+                      ))}
+                  </div>
                 </div>
-              </div>
               )}
             </motion.div>
           </div>

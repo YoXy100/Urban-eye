@@ -11,7 +11,6 @@ import MapView from "./pages/MapView";
 import Kanban from "./pages/Kanban";
 import Rewards from "./pages/Rewards";
 import Profile from "./pages/Profile";
-import RobotDemo from "./pages/RobotDemo";
 
 function PageWrapper({ children }: { children: React.ReactNode }) {
   return (
@@ -28,7 +27,7 @@ function PageWrapper({ children }: { children: React.ReactNode }) {
 
 function AppRoutes() {
   const location = useLocation();
-  const noNavRoutes = ["/", "/landing", "/demo"];
+  const noNavRoutes = ["/", "/landing"];
   const showNav = !noNavRoutes.includes(location.pathname);
 
   return (
@@ -43,7 +42,6 @@ function AppRoutes() {
         <Route path="/kanban" element={<PageWrapper><Kanban /></PageWrapper>} />
         <Route path="/rewards" element={<PageWrapper><Rewards /></PageWrapper>} />
         <Route path="/profile" element={<PageWrapper><Profile /></PageWrapper>} />
-        <Route path="/demo" element={<PageWrapper><RobotDemo /></PageWrapper>} />
       </Routes>
     </>
   );
@@ -53,7 +51,6 @@ export default function App() {
   return (
     <BrowserRouter>
       <AppProvider>
-        {/* No changes needed here — theme class is applied to <html> via AppContext */}
         <div className="min-h-screen bg-[#050816]">
           <AppRoutes />
         </div>

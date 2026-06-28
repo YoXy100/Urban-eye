@@ -113,10 +113,7 @@ function FieldGroup({ label, children }: { label: string; children: React.ReactN
   );
 }
 
-<<<<<<< HEAD
-=======
 // GitHub SVG icon
->>>>>>> 4b36976952ccb9e677cb3a8e15deaa37adfb4ff5
 function GitHubIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
@@ -125,7 +122,6 @@ function GitHubIcon() {
   );
 }
 
-<<<<<<< HEAD
 // ── Social buttons ────────────────────────────────────────────────────────────
 function SocialButtons({ onGoogle, onGithub, disabled, padding = 9 }: {
   onGoogle: () => void; onGithub: () => void; disabled: boolean; padding?: number;
@@ -182,22 +178,6 @@ function LoginForm({ onSwitch, onLogin, onGoogle, onGithub, email, setEmail, pas
   onSwitch: () => void; onLogin: () => void; onGoogle: () => void; onGithub: () => void;
   email: string; setEmail: (v: string) => void; password: string; setPassword: (v: string) => void;
   error: string; submitting: boolean;
-=======
-// ── LOGIN FORM ────────────────────────────────────────────────────────────────
-function LoginForm({
-  onSwitch, onLogin, onGoogleLogin, onGithubLogin,
-  email, setEmail, password, setPassword,
-  error, submitting,
-}: {
-  onSwitch: () => void;
-  onLogin: () => void;
-  onGoogleLogin: () => void;
-  onGithubLogin: () => void;
-  email: string; setEmail: (v: string) => void;
-  password: string; setPassword: (v: string) => void;
-  error: string;
-  submitting: boolean;
->>>>>>> 4b36976952ccb9e677cb3a8e15deaa37adfb4ff5
 }) {
   const [remember, setRemember] = useState(false);
   return (
@@ -225,49 +205,8 @@ function LoginForm({
         <i className={`ti ${submitting ? "ti-loader-2" : "ti-login"}`} aria-hidden="true" style={submitting ? { animation: "spin 1s linear infinite" } : {}} />
         {submitting ? "Signing in…" : "Sign in to dashboard"}
       </button>
-<<<<<<< HEAD
       <Divider label="or continue with" />
       <SocialButtons onGoogle={onGoogle} onGithub={onGithub} disabled={submitting} />
-=======
-
-      <div style={{ display: "flex", alignItems: "center", gap: 10, margin: "1.25rem 0" }}>
-        <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.07)" }} />
-        <span style={{ fontSize: 12, color: "rgba(255,255,255,0.25)" }}>or continue with</span>
-        <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.07)" }} />
-      </div>
-
-      <div style={{ display: "flex", gap: 8 }}>
-        {/* Google */}
-        <button
-          onClick={onGoogleLogin}
-          disabled={submitting}
-          style={{ flex: 1, padding: 9, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 9, color: "rgba(255,255,255,0.7)", fontSize: 13, fontFamily: "'Inter', sans-serif", cursor: submitting ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 7, transition: "all 0.15s" }}
-          onMouseEnter={(e) => { if (!submitting) { (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.09)"; (e.currentTarget as HTMLButtonElement).style.color = "#fff"; } }}
-          onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.04)"; (e.currentTarget as HTMLButtonElement).style.color = "rgba(255,255,255,0.7)"; }}
-        >
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
-            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
-          </svg>
-          Google
-        </button>
-
-        {/* GitHub — NOW FULLY ENABLED */}
-        <button
-          onClick={onGithubLogin}
-          disabled={submitting}
-          style={{ flex: 1, padding: 9, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 9, color: "rgba(255,255,255,0.7)", fontSize: 13, fontFamily: "'Inter', sans-serif", cursor: submitting ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 7, transition: "all 0.15s" }}
-          onMouseEnter={(e) => { if (!submitting) { (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.09)"; (e.currentTarget as HTMLButtonElement).style.color = "#fff"; } }}
-          onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.04)"; (e.currentTarget as HTMLButtonElement).style.color = "rgba(255,255,255,0.7)"; }}
-        >
-          <GitHubIcon />
-          GitHub
-        </button>
-      </div>
-
->>>>>>> 4b36976952ccb9e677cb3a8e15deaa37adfb4ff5
       <p style={{ textAlign: "center", marginTop: "1.5rem", fontSize: 13, color: "rgba(255,255,255,0.3)" }}>
         New to Urban Eye?{" "}
         <button onClick={onSwitch} style={{ background: "none", border: "none", color: "#6AABFF", fontSize: 13, fontWeight: 500, cursor: "pointer", padding: 0, fontFamily: "'Inter',sans-serif" }}>Create account</button>
@@ -277,26 +216,10 @@ function LoginForm({
 }
 
 // ── SIGNUP FORM ───────────────────────────────────────────────────────────────
-<<<<<<< HEAD
 function SignupForm({ onSwitch, onSignup, onGoogle, onGithub, email, setEmail, password, setPassword, error, submitting }: {
   onSwitch: () => void; onSignup: (fn: string, ln: string) => void; onGoogle: () => void; onGithub: () => void;
   email: string; setEmail: (v: string) => void; password: string; setPassword: (v: string) => void;
   error: string; submitting: boolean;
-=======
-function SignupForm({
-  onSwitch, onSignup, onGoogleLogin, onGithubLogin,
-  email, setEmail, password, setPassword,
-  error, submitting,
-}: {
-  onSwitch: () => void;
-  onSignup: (firstName: string, lastName: string) => void;
-  onGoogleLogin: () => void;
-  onGithubLogin: () => void;
-  email: string; setEmail: (v: string) => void;
-  password: string; setPassword: (v: string) => void;
-  error: string;
-  submitting: boolean;
->>>>>>> 4b36976952ccb9e677cb3a8e15deaa37adfb4ff5
 }) {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName]   = useState("");
@@ -343,49 +266,8 @@ function SignupForm({
         <i className={`ti ${submitting ? "ti-loader-2" : "ti-user-plus"}`} aria-hidden="true" style={submitting ? { animation: "spin 1s linear infinite" } : {}} />
         {submitting ? "Creating account…" : "Create account"}
       </button>
-<<<<<<< HEAD
       <Divider label="or register with" />
       <SocialButtons onGoogle={onGoogle} onGithub={onGithub} disabled={submitting} padding={11} />
-=======
-
-      <div style={{ display: "flex", alignItems: "center", gap: 10, margin: "1.25rem 0" }}>
-        <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.07)" }} />
-        <span style={{ fontSize: 12, color: "rgba(255,255,255,0.25)" }}>or register with</span>
-        <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.07)" }} />
-      </div>
-
-      <div style={{ display: "flex", gap: 8 }}>
-        {/* Google */}
-        <button
-          onClick={onGoogleLogin}
-          disabled={submitting}
-          style={{ flex: 1, padding: 11, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 9, color: "rgba(255,255,255,0.7)", fontSize: 13, fontFamily: "'Inter', sans-serif", cursor: submitting ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 7, transition: "all 0.15s" }}
-          onMouseEnter={(e) => { if (!submitting) { (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.09)"; (e.currentTarget as HTMLButtonElement).style.color = "#fff"; } }}
-          onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.04)"; (e.currentTarget as HTMLButtonElement).style.color = "rgba(255,255,255,0.7)"; }}
-        >
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
-            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
-          </svg>
-          Google
-        </button>
-
-        {/* GitHub — NOW FULLY ENABLED */}
-        <button
-          onClick={onGithubLogin}
-          disabled={submitting}
-          style={{ flex: 1, padding: 11, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 9, color: "rgba(255,255,255,0.7)", fontSize: 13, fontFamily: "'Inter', sans-serif", cursor: submitting ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 7, transition: "all 0.15s" }}
-          onMouseEnter={(e) => { if (!submitting) { (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.09)"; (e.currentTarget as HTMLButtonElement).style.color = "#fff"; } }}
-          onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.04)"; (e.currentTarget as HTMLButtonElement).style.color = "rgba(255,255,255,0.7)"; }}
-        >
-          <GitHubIcon />
-          GitHub
-        </button>
-      </div>
-
->>>>>>> 4b36976952ccb9e677cb3a8e15deaa37adfb4ff5
       <p style={{ textAlign: "center", marginTop: "1rem", fontSize: 13, color: "rgba(255,255,255,0.3)" }}>
         Already a member?{" "}
         <button onClick={onSwitch} style={{ background: "none", border: "none", color: "#6AABFF", fontSize: 13, fontWeight: 500, cursor: "pointer", padding: 0, fontFamily: "'Inter',sans-serif" }}>Sign in</button>
@@ -403,20 +285,9 @@ export default function AuthPage() {
   const [submitting, setSubmitting] = useState(false);
 
   const navigate = useNavigate();
-<<<<<<< HEAD
   const { loginWithGoogle, loginWithGithub, user, loading, theme } = useApp();
 
   useEffect(() => { if (!loading && user) navigate("/dashboard"); }, [user, loading, navigate]);
-=======
-  const { loginWithGoogle, loginWithGithub, user, loading } = useApp();
-
-  useEffect(() => {
-    if (!loading && user) {
-      navigate("/dashboard");
-    }
-  }, [user, loading, navigate]);
-
->>>>>>> 4b36976952ccb9e677cb3a8e15deaa37adfb4ff5
   useEffect(() => { setError(""); }, [tab, email, password]);
 
   const handleLogin = async () => {
@@ -426,13 +297,6 @@ export default function AuthPage() {
       await signInWithEmailAndPassword(auth, email, password);
     } catch (err: unknown) {
       const code = (err as { code?: string }).code ?? "";
-<<<<<<< HEAD
-      if (["auth/user-not-found","auth/wrong-password","auth/invalid-credential"].includes(code)) setError("Incorrect email or password.");
-      else if (code === "auth/invalid-email")         setError("That doesn't look like a valid email address.");
-      else if (code === "auth/too-many-requests")     setError("Too many attempts. Please wait and try again.");
-      else if (code === "auth/operation-not-allowed") setError("Email sign-in is not enabled. Please contact support.");
-      else                                            setError("Sign-in failed. Please try again.");
-=======
       if (code === "auth/user-not-found" || code === "auth/wrong-password" || code === "auth/invalid-credential") {
         setError("Incorrect email or password. Please try again.");
       } else if (code === "auth/invalid-email") {
@@ -444,7 +308,7 @@ export default function AuthPage() {
       } else {
         setError("Sign-in failed. Please try again.");
       }
->>>>>>> 4b36976952ccb9e677cb3a8e15deaa37adfb4ff5
+
       setSubmitting(false);
     }
   };
@@ -454,7 +318,6 @@ export default function AuthPage() {
     if (password.length < 8) { setError("Password must be at least 8 characters."); return; }
     setSubmitting(true); setError("");
     try {
-<<<<<<< HEAD
       const cred = await createUserWithEmailAndPassword(auth, email, password);
       await updateProfile(cred.user, { displayName: `${firstName} ${lastName}`.trim() });
     } catch (err: unknown) {
@@ -464,65 +327,20 @@ export default function AuthPage() {
       else if (code === "auth/weak-password")    setError("Password too weak — use at least 8 characters.");
       else if (code === "auth/operation-not-allowed") setError("Email registration is not enabled.");
       else                                       setError("Registration failed. Please try again.");
-=======
-      const credential = await createUserWithEmailAndPassword(auth, email, password);
-      await updateProfile(credential.user, { displayName: `${firstName} ${lastName}`.trim() });
-    } catch (err: unknown) {
-      const code = (err as { code?: string }).code ?? "";
-      if (code === "auth/email-already-in-use") {
-        setError("An account with this email already exists. Try signing in.");
-      } else if (code === "auth/invalid-email") {
-        setError("That doesn't look like a valid email address.");
-      } else if (code === "auth/weak-password") {
-        setError("Password is too weak. Use at least 8 characters.");
-      } else if (code === "auth/operation-not-allowed") {
-        setError("Email registration is not enabled. Please contact support.");
-      } else {
-        setError("Registration failed. Please try again.");
-      }
->>>>>>> 4b36976952ccb9e677cb3a8e15deaa37adfb4ff5
       setSubmitting(false);
     }
   };
 
-<<<<<<< HEAD
   const handleGoogle = async () => {
     setSubmitting(true); setError("");
     try { await loginWithGoogle(); }
     catch (err: unknown) {
       const code = (err as { code?: string }).code ?? "";
       if (code !== "auth/popup-closed-by-user") setError("Google sign-in failed.");
-=======
-  const handleGoogleLogin = async () => {
-    setSubmitting(true); setError("");
-    try {
-      await loginWithGoogle();
-    } catch (err: unknown) {
-      const code = (err as { code?: string }).code ?? "";
-      if (code !== "auth/popup-closed-by-user") setError("Google sign-in failed. Please try again.");
       setSubmitting(false);
     }
   };
 
-  const handleGithubLogin = async () => {
-    setSubmitting(true); setError("");
-    try {
-      await loginWithGithub();
-    } catch (err: unknown) {
-      const code = (err as { code?: string }).code ?? "";
-      if (code === "auth/account-exists-with-different-credential") {
-        setError("An account already exists with this email. Try signing in with Google or email instead.");
-      } else if (code === "auth/popup-closed-by-user") {
-        // user cancelled — do nothing
-      } else {
-        setError("GitHub sign-in failed. Please try again.");
-      }
->>>>>>> 4b36976952ccb9e677cb3a8e15deaa37adfb4ff5
-      setSubmitting(false);
-    }
-  };
-
-<<<<<<< HEAD
   const handleGithub = async () => {
     setSubmitting(true); setError("");
     try { await loginWithGithub(); }
@@ -543,9 +361,6 @@ export default function AuthPage() {
   const leftBg = isBlueSteel
     ? "linear-gradient(160deg, #88BDF2 0%, #BDDDFC 60%, #a8d4f8 100%)"
     : "linear-gradient(160deg, #0D1B3E 0%, #0A0F1E 60%, #061A2E 100%)";
-
-=======
->>>>>>> 4b36976952ccb9e677cb3a8e15deaa37adfb4ff5
   if (loading || submitting) {
     return (
       <div style={{ minHeight: "100vh", background: pageBg, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16 }}>
@@ -596,29 +411,18 @@ export default function AuthPage() {
           ))}
         </div>
 
-<<<<<<< HEAD
         {/* Pulse rings */}
         <div style={{ position: "absolute", bottom: "2rem", right: "-2rem", width: 140, height: 140, borderRadius: "50%", border: `1px solid ${isBlueSteel ? "rgba(56,73,89,0.25)" : "rgba(30,107,230,0.2)"}`, animation: "authPulse 3s ease-in-out infinite" }} />
         <div style={{ position: "absolute", bottom: "2.5rem", right: "-1.5rem", width: 90, height: 90, borderRadius: "50%", border: `1px solid ${isBlueSteel ? "rgba(56,73,89,0.35)" : "rgba(30,107,230,0.35)"}`, animation: "authPulse 3s ease-in-out infinite 1s" }} />
         <div style={{ position: "absolute", bottom: "4.5rem", right: "0.5rem", width: 10, height: 10, background: isBlueSteel ? "#384959" : "#1E6BE6", borderRadius: "50%" }} />
-=======
-        <div style={{ position: "absolute", bottom: "2rem", right: "-2rem", width: 140, height: 140, borderRadius: "50%", border: "1px solid rgba(30,107,230,0.2)", animation: "authPulse 3s ease-in-out infinite" }} />
-        <div style={{ position: "absolute", bottom: "2.5rem", right: "-1.5rem", width: 90, height: 90, borderRadius: "50%", border: "1px solid rgba(30,107,230,0.35)", animation: "authPulse 3s ease-in-out infinite 1s" }} />
-        <div style={{ position: "absolute", bottom: "4.5rem", right: "0.5rem", width: 10, height: 10, background: "#1E6BE6", borderRadius: "50%" }} />
->>>>>>> 4b36976952ccb9e677cb3a8e15deaa37adfb4ff5
       </div>
 
       {/* Right panel */}
       <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", padding: "2.5rem 2rem", background: pageBg, overflowY: "auto", transition: "background 0.35s ease" }}>
         <div style={{ width: "100%", maxWidth: 360 }}>
-<<<<<<< HEAD
           {/* Tab switcher */}
           <div style={{ display: "flex", background: isBlueSteel ? "rgba(56,73,89,0.10)" : "rgba(255,255,255,0.05)", borderRadius: 10, padding: 4, marginBottom: "2rem", border: isBlueSteel ? "1px solid rgba(56,73,89,0.18)" : "1px solid rgba(255,255,255,0.06)" }}>
             {(["login","signup"] as Tab[]).map(t => (
-=======
-          <div style={{ display: "flex", background: "rgba(255,255,255,0.05)", borderRadius: 10, padding: 4, marginBottom: "2rem", border: "1px solid rgba(255,255,255,0.06)" }}>
-            {(["login", "signup"] as Tab[]).map((t) => (
->>>>>>> 4b36976952ccb9e677cb3a8e15deaa37adfb4ff5
               <button key={t} onClick={() => setTab(t)}
                 style={{ flex: 1, padding: "8px 0", fontSize: 13, fontWeight: 500, border: "none", background: tab === t ? (isBlueSteel ? "#384959" : "#1E6BE6") : "none", color: tab === t ? (isBlueSteel ? "#BDDDFC" : "#fff") : "rgba(255,255,255,0.4)", borderRadius: 7, cursor: "pointer", transition: "all 0.2s", fontFamily: "'Inter',sans-serif" }}>
                 {t === "login" ? "Sign in" : "Register"}
@@ -627,7 +431,6 @@ export default function AuthPage() {
           </div>
 
           {tab === "login" ? (
-<<<<<<< HEAD
             <LoginForm onSwitch={() => setTab("signup")} onLogin={handleLogin}
               onGoogle={handleGoogle} onGithub={handleGithub}
               email={email} setEmail={setEmail} password={password} setPassword={setPassword}
@@ -637,29 +440,6 @@ export default function AuthPage() {
               onGoogle={handleGoogle} onGithub={handleGithub}
               email={email} setEmail={setEmail} password={password} setPassword={setPassword}
               error={error} submitting={submitting} />
-=======
-            <LoginForm
-              onSwitch={() => setTab("signup")}
-              onLogin={handleLogin}
-              onGoogleLogin={handleGoogleLogin}
-              onGithubLogin={handleGithubLogin}
-              email={email} setEmail={setEmail}
-              password={password} setPassword={setPassword}
-              error={error}
-              submitting={submitting}
-            />
-          ) : (
-            <SignupForm
-              onSwitch={() => setTab("login")}
-              onSignup={handleSignup}
-              onGoogleLogin={handleGoogleLogin}
-              onGithubLogin={handleGithubLogin}
-              email={email} setEmail={setEmail}
-              password={password} setPassword={setPassword}
-              error={error}
-              submitting={submitting}
-            />
->>>>>>> 4b36976952ccb9e677cb3a8e15deaa37adfb4ff5
           )}
         </div>
       </div>

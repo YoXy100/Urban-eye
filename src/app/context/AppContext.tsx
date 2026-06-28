@@ -28,6 +28,8 @@ interface AppContextType {
   addComment: (id: string, text: string) => Promise<void>;
   updateProfile: (data: { name?: string; photoURL?: string }) => Promise<void>;
   redeemReward: (cost: number) => Promise<string>;
+  theme: string;
+  toggleTheme: () => void;
 }
 
 const AppContext = createContext<AppContextType | null>(null);
@@ -38,6 +40,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [issues, setIssues] = useState<Issue[]>([]);
   const [activities, setActivities] = useState<UserActivity[]>([]);
   const [loading, setLoading] = useState(true);
+  const [theme, setTheme] = useState("default");
+
+  const toggleTheme = () => {
+    const newTheme = theme === "default" ? "blue-steel" : "default";
+    setTheme(newTheme);
+    document.documentElement.setAttribute("data-theme", newTheme);
+  };
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (fbUser) => {
@@ -191,7 +200,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       user, firebaseUser, loading, issues, activities,
       loginWithGoogle, loginWithGithub, logout,
       addIssue, deleteIssue, upvoteIssue, updateIssueStatus,
-      reportFakeIssue, addComment, updateProfile, redeemReward
+      reportFakeIssue, addComment, updateProfile, redeemReward,
+      theme, toggleTheme
     }}>
       {children}
     </AppContext.Provider>

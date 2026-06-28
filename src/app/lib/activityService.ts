@@ -14,6 +14,7 @@ export type ActivityType =
   | "status_changed"
   | "fake_reported"
   | "reward_redeemed"
+  | "comment_added"
   | "profile_updated";
 
 export interface UserActivity {
@@ -85,8 +86,4 @@ export function subscribeToActivities(
   }, (error) => {
     console.error("Error fetching activities:", error);
   });
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> 4b36976952ccb9e677cb3a8e15deaa37adfb4ff5
