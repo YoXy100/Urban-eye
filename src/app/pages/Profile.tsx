@@ -828,7 +828,18 @@ export default function Profile() {
                 <div className="relative">
                   <div className="absolute left-4 top-0 bottom-0 w-px bg-white/8" />
                   <div className="space-y-4">
-                    {(activities.length > 0 ? activities.slice(0, 10) : ACTIVITY_LOG).map((entry: any, i: number) => (
+                    {activities.slice(0, 10).map((entry: any, i: number) => {
+                      const ACTIVITY_ICONS: Record<string, string> = {
+                        issue_reported: "📝",
+                        issue_deleted: "🗑️",
+                        issue_upvoted: "👍",
+                        status_changed: "🔄",
+                        fake_reported: "🚨",
+                        reward_redeemed: "🎁",
+                        comment_added: "💬",
+                        profile_updated: "👤"
+                      };
+                      return (
                         <motion.div
                           key={entry.id}
                           initial={{ opacity: 0, x: -12 }}
@@ -848,7 +859,8 @@ export default function Profile() {
                             </div>
                           </div>
                         </motion.div>
-                      ))}
+                      );
+                    })}
                   </div>
                 </div>
               )}
