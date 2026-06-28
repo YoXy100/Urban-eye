@@ -1,5 +1,5 @@
 import {
-  collection, addDoc, query, where, orderBy, onSnapshot, Unsubscribe
+  collection, addDoc, query, where, onSnapshot, Unsubscribe
 } from "firebase/firestore";
 import { db } from "./firebase";
 
@@ -85,4 +85,8 @@ export function subscribeToActivities(
   }, (error) => {
     console.error("Error fetching activities:", error);
   });
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 4b36976952ccb9e677cb3a8e15deaa37adfb4ff5
