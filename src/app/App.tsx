@@ -50,6 +50,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <AppProvider>
+        {/* No changes needed here — theme class is applied to <html> via AppContext */}
         <div className="min-h-screen bg-[#050816]">
           <AppRoutes />
         </div>

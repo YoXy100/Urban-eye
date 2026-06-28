@@ -3,6 +3,7 @@ import { Link } from "react-router";
 import { motion, useInView } from "motion/react";
 import { ArrowRight, MapPin, TrendingUp, Shield, Users, Zap, BarChart3, Globe, ChevronRight, Star, Menu, X } from "lucide-react";
 import ParticleCanvas from "../components/ParticleCanvas";
+import { useApp } from "../context/AppContext";
 
 function useCountUp(target: number, duration = 2000, trigger = true) {
   const [count, setCount] = useState(0);
@@ -57,9 +58,49 @@ const TESTIMONIALS = [
   { quote: "Reported a pothole Monday, it was fixed by Thursday. This kind of accountability was unimaginable two years ago.", name: "Jessica Park", role: "Resident, Downtown District", avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=60&h=60&fit=crop&auto=format", stars: 5 },
 ];
 
+// ── Theme Toggle button (shared style for desktop + mobile) ──────────────────
+function LandingThemeToggle({ isBlueSteel, toggleTheme, compact = false }: {
+  isBlueSteel: boolean; toggleTheme: () => void; compact?: boolean;
+}) {
+  if (compact) {
+    return (
+      <button
+        onClick={toggleTheme}
+        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all border mt-1"
+        style={{
+          background: isBlueSteel ? "#384959" : "rgba(255,255,255,0.05)",
+          color: isBlueSteel ? "#BDDDFC" : "#94a3b8",
+          borderColor: isBlueSteel ? "#6A89A7" : "rgba(255,255,255,0.08)",
+        }}
+      >
+        <span>{isBlueSteel ? "☀️" : "🌊"}</span>
+        {isBlueSteel ? "Switch to Default Theme" : "Switch to Blue Steel Theme"}
+      </button>
+    );
+  }
+  return (
+    <button
+      onClick={toggleTheme}
+      title={isBlueSteel ? "Switch to Default Theme" : "Switch to Blue Steel Theme"}
+      className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-medium transition-all duration-300"
+      style={{
+        background: isBlueSteel ? "#384959" : "rgba(255,255,255,0.05)",
+        color: isBlueSteel ? "#BDDDFC" : "#94a3b8",
+        borderColor: isBlueSteel ? "#6A89A7" : "rgba(255,255,255,0.08)",
+      }}
+    >
+      <span className="text-sm">{isBlueSteel ? "☀️" : "🌊"}</span>
+      <span className="hidden lg:inline">{isBlueSteel ? "Default" : "Blue Steel"}</span>
+    </button>
+  );
+}
+
 function LandingNav() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const { theme, toggleTheme } = useApp();
+  const isBlueSteel = theme === "blue-steel";
+
   useEffect(() => {
     const h = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", h);
@@ -85,6 +126,7 @@ function LandingNav() {
           <a href="#testimonials" className="hover:text-white transition-colors">Testimonials</a>
         </div>
         <div className="hidden md:flex items-center gap-3">
+          <LandingThemeToggle isBlueSteel={isBlueSteel} toggleTheme={toggleTheme} />
           <Link to="/dashboard" className="text-sm font-medium text-slate-300 hover:text-white transition-colors px-3 py-2">
             Sign In
           </Link>
@@ -103,6 +145,7 @@ function LandingNav() {
               {label}
             </Link>
           ))}
+          <LandingThemeToggle isBlueSteel={isBlueSteel} toggleTheme={toggleTheme} compact />
         </div>
       )}
     </motion.nav>

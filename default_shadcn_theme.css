@@ -78,6 +78,49 @@
   --sidebar-ring: oklch(0.439 0 0);
 }
 
+/* ===================== */
+/* UrbanEye Blue Steel Theme */
+/* ===================== */
+.theme-blue-steel {
+  --background: #BDDDFC;
+  --foreground: #384959;
+  --card: #ffffff;
+  --card-foreground: #384959;
+  --popover: #ffffff;
+  --popover-foreground: #384959;
+  --primary: #384959;
+  --primary-foreground: #ffffff;
+  --secondary: #88BDF2;
+  --secondary-foreground: #384959;
+  --muted: #88BDF2;
+  --muted-foreground: #6A89A7;
+  --accent: #6A89A7;
+  --accent-foreground: #ffffff;
+  --destructive: #d4183d;
+  --destructive-foreground: #ffffff;
+  --border: rgba(56, 73, 89, 0.2);
+  --input: transparent;
+  --input-background: #BDDDFC;
+  --switch-background: #88BDF2;
+  --font-weight-medium: 500;
+  --font-weight-normal: 400;
+  --ring: #6A89A7;
+  --chart-1: #384959;
+  --chart-2: #6A89A7;
+  --chart-3: #88BDF2;
+  --chart-4: #BDDDFC;
+  --chart-5: #4a6fa5;
+  --radius: 0.625rem;
+  --sidebar: #384959;
+  --sidebar-foreground: #BDDDFC;
+  --sidebar-primary: #88BDF2;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #6A89A7;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: rgba(255, 255, 255, 0.15);
+  --sidebar-ring: #88BDF2;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);

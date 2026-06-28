@@ -21,8 +21,9 @@ export default function Navbar() {
 
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, issues, logout } = useApp();
+  const { user, issues, logout, theme, toggleTheme } = useApp();
   const newIssues = issues.filter((i) => i.status === "new").length;
+  const isBlueSteel = theme === "blue-steel";
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 20);
@@ -125,6 +126,23 @@ export default function Navbar() {
               <span className="hidden lg:block text-xs">Search</span>
               <kbd className="hidden lg:block text-[10px] font-mono bg-white/10 px-1.5 py-0.5 rounded text-slate-500">⌘K</kbd>
             </button>
+
+            {/* ── Theme Toggle Button ── */}
+            <motion.button
+              onClick={toggleTheme}
+              whileTap={{ scale: 0.92 }}
+              title={isBlueSteel ? "Switch to Default Theme" : "Switch to Blue Steel Theme"}
+              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-medium transition-all duration-300"
+              style={{
+                background: isBlueSteel ? "#384959" : "rgba(255,255,255,0.05)",
+                color: isBlueSteel ? "#BDDDFC" : "#94a3b8",
+                borderColor: isBlueSteel ? "#6A89A7" : "rgba(255,255,255,0.08)",
+              }}
+            >
+              <span className="text-sm">{isBlueSteel ? "☀️" : "🌊"}</span>
+              <span className="hidden lg:block">{isBlueSteel ? "Default" : "Blue Steel"}</span>
+            </motion.button>
+            {/* ─────────────────────── */}
 
             {/* Notifications */}
             <div className="relative" data-dropdown>
@@ -271,6 +289,20 @@ export default function Navbar() {
                   </Link>
                 );
               })}
+
+              {/* Mobile Theme Toggle */}
+              <button
+                onClick={toggleTheme}
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all border mt-1"
+                style={{
+                  background: isBlueSteel ? "#384959" : "rgba(255,255,255,0.05)",
+                  color: isBlueSteel ? "#BDDDFC" : "#94a3b8",
+                  borderColor: isBlueSteel ? "#6A89A7" : "rgba(255,255,255,0.08)",
+                }}
+              >
+                <span>{isBlueSteel ? "☀️" : "🌊"}</span>
+                {isBlueSteel ? "Switch to Default Theme" : "Switch to Blue Steel Theme"}
+              </button>
 
               {/* Mobile sign out */}
               <button
