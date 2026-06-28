@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { useNavigate } from "react-router";
 import {
@@ -30,28 +30,115 @@ const DEFAULT_BADGES = [
   { id: "b6", name: "City Architect",     description: "Report 100 issues",                 icon: "🏛️", unlocked: false, progress: 0,    total: 100   },
 ];
 
-const CONTRIBUTION_HEATMAP = Array.from({ length: 52 }, (_, week) =>
-  Array.from({ length: 7 }, (_, day) => ({
-    week, day,
-    count: Math.random() > 0.65 ? Math.floor(Math.random() * 5) + 1 : 0,
-  }))
-).flat();
+// ── Heatmap helpers ──────────────────────────────────────────────────────────
 
-function HeatmapCell({ count }: { count: number }) {
-  const colors = [
-    "rgba(59,130,246,0.04)",
-    "rgba(59,130,246,0.2)",
-    "rgba(59,130,246,0.4)",
-    "rgba(59,130,246,0.65)",
-    "rgba(59,130,246,0.85)",
-    "#3b82f6",
-  ];
+interface HeatmapEntry {
+  week: number;
+  day: number;
+  count: number;
+  date: Date;
+}
+
+/** Build 52-week × 7-day heatmap grid from an array of issues. */
+function buildHeatmapFromIssues(issues: Issue[]): { grid: HeatmapEntry[]; monthLabels: { label: string; weekIdx: number }[] } {
+  const today = new Date();
+  // Start of heatmap: 52 weeks ago, aligned to the most recent Sunday
+  const startOfWeek = new Date(today);
+  startOfWeek.setDate(today.getDate() - today.getDay()); // most recent Sunday
+  const heatmapStart = new Date(startOfWeek);
+  heatmapStart.setDate(heatmapStart.getDate() - 51 * 7); // go back 51 more weeks
+  heatmapStart.setHours(0, 0, 0, 0);
+
+  // Count issues per calendar date
+  const countMap = new Map<string, number>();
+  for (const issue of issues) {
+    // Issues have reportedAt (string) or createdAt (Firestore Timestamp)
+    let dateStr = issue.reportedAt;
+    if (!dateStr && (issue as any).createdAt) {
+      const ts = (issue as any).createdAt;
+      dateStr = ts.toDate ? ts.toDate().toISOString().slice(0, 10) : new Date(ts).toISOString().slice(0, 10);
+    }
+    if (!dateStr) continue;
+    const key = dateStr.slice(0, 10); // YYYY-MM-DD
+    countMap.set(key, (countMap.get(key) || 0) + 1);
+  }
+
+  const grid: HeatmapEntry[] = [];
+  const monthLabels: { label: string; weekIdx: number }[] = [];
+  const seenMonths = new Set<string>();
+  const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+  for (let week = 0; week < 52; week++) {
+    for (let day = 0; day < 7; day++) {
+      const cellDate = new Date(heatmapStart);
+      cellDate.setDate(heatmapStart.getDate() + week * 7 + day);
+
+      // Don't include future dates
+      const isFuture = cellDate > today;
+
+      const key = cellDate.toISOString().slice(0, 10);
+      grid.push({
+        week,
+        day,
+        count: isFuture ? -1 : (countMap.get(key) || 0),
+        date: new Date(cellDate),
+      });
+
+      // Month labels: mark the first time we see a new month
+      const monthKey = `${cellDate.getFullYear()}-${cellDate.getMonth()}`;
+      if (!seenMonths.has(monthKey) && day === 0) {
+        seenMonths.add(monthKey);
+        monthLabels.push({ label: MONTHS[cellDate.getMonth()], weekIdx: week });
+      }
+    }
+  }
+
+  return { grid, monthLabels };
+}
+
+const HEATMAP_COLORS = [
+  "rgba(59,130,246,0.06)",  // 0 contributions
+  "rgba(59,130,246,0.25)",  // 1
+  "rgba(59,130,246,0.45)",  // 2
+  "rgba(59,130,246,0.65)",  // 3
+  "rgba(59,130,246,0.82)",  // 4
+  "#3b82f6",                // 5+
+];
+
+function HeatmapCell({ entry }: { entry: HeatmapEntry }) {
+  const [showTooltip, setShowTooltip] = useState(false);
+
+  // Future dates rendered as invisible
+  if (entry.count === -1) {
+    return <div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: "transparent" }} />;
+  }
+
+  const bg = HEATMAP_COLORS[Math.min(entry.count, 5)];
+  const dateStr = entry.date.toLocaleDateString("en-US", {
+    weekday: "short", month: "short", day: "numeric", year: "numeric",
+  });
+  const label = entry.count === 0
+    ? `No contributions on ${dateStr}`
+    : `${entry.count} contribution${entry.count > 1 ? "s" : ""} on ${dateStr}`;
+
   return (
-    <div
-      className="w-2.5 h-2.5 rounded-sm"
-      style={{ backgroundColor: colors[Math.min(count, 5)] }}
-      title={`${count} contributions`}
-    />
+    <div className="relative">
+      <div
+        className="w-2.5 h-2.5 rounded-sm cursor-pointer transition-transform hover:scale-150"
+        style={{ backgroundColor: bg }}
+        onMouseEnter={() => setShowTooltip(true)}
+        onMouseLeave={() => setShowTooltip(false)}
+      />
+      {showTooltip && (
+        <div
+          className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 px-2.5 py-1.5 rounded-lg bg-[#0d1526] border border-blue-500/20 shadow-xl whitespace-nowrap pointer-events-none"
+          style={{ boxShadow: "0 4px 20px rgba(0,0,0,0.6)" }}
+        >
+          <p className="text-[10px] text-slate-200 font-medium">{label}</p>
+          <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-[#0d1526]" />
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -390,6 +477,16 @@ export default function Profile() {
   const resolved   = myIssues.filter(i => i.status === "resolved");
   const inProgress = myIssues.filter(i => i.status === "in_progress");
 
+  // Build heatmap from user's actual issues
+  const { grid: heatmapGrid, monthLabels } = useMemo(
+    () => buildHeatmapFromIssues(myIssues),
+    [myIssues]
+  );
+  const totalContributions = useMemo(
+    () => heatmapGrid.reduce((sum, e) => sum + Math.max(0, e.count), 0),
+    [heatmapGrid]
+  );
+
   const currentTier =
     RANK_TIERS_DATA.find(t => user.points >= t.minPoints && user.points < t.maxPoints) ??
     RANK_TIERS_DATA[0];
@@ -545,23 +642,64 @@ export default function Profile() {
             >
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-semibold text-white">Contribution Activity</h3>
-                <span className="text-xs text-slate-400">Last 12 months</span>
+                <span className="text-xs text-slate-400">
+                  {totalContributions} contribution{totalContributions !== 1 ? "s" : ""} in the last year
+                </span>
               </div>
               <div className="overflow-x-auto">
-                <div className="flex gap-1 min-w-max">
-                  {Array.from({ length: 52 }, (_, week) => (
-                    <div key={week} className="flex flex-col gap-1">
-                      {Array.from({ length: 7 }, (_, day) => {
-                        const cell = CONTRIBUTION_HEATMAP.find(c => c.week === week && c.day === day);
-                        return <HeatmapCell key={day} count={cell?.count ?? 0} />;
-                      })}
+                {/* Month labels */}
+                <div className="flex gap-1 min-w-max mb-1" style={{ paddingLeft: "24px" }}>
+                  {monthLabels.map((m, i) => (
+                    <div
+                      key={`${m.label}-${i}`}
+                      className="text-[9px] text-slate-500"
+                      style={{
+                        position: "relative",
+                        left: `${m.weekIdx * 12}px`,
+                        marginRight: i < monthLabels.length - 1
+                          ? `${Math.max(0, ((monthLabels[i + 1]?.weekIdx ?? 52) - m.weekIdx) * 12 - 24)}px`
+                          : 0,
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {m.label}
                     </div>
                   ))}
                 </div>
+                <div className="flex gap-0 min-w-max">
+                  {/* Day-of-week labels */}
+                  <div className="flex flex-col gap-1 mr-1.5 justify-center" style={{ minWidth: "20px" }}>
+                    {["", "Mon", "", "Wed", "", "Fri", ""].map((d, i) => (
+                      <div key={i} className="h-2.5 flex items-center text-[9px] text-slate-500 leading-none">
+                        {d}
+                      </div>
+                    ))}
+                  </div>
+                  {/* Heatmap grid */}
+                  <div className="flex gap-1">
+                    {Array.from({ length: 52 }, (_, week) => (
+                      <div key={week} className="flex flex-col gap-1">
+                        {Array.from({ length: 7 }, (_, day) => {
+                          const entry = heatmapGrid.find(c => c.week === week && c.day === day);
+                          return entry
+                            ? <HeatmapCell key={day} entry={entry} />
+                            : <div key={day} className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: "transparent" }} />;
+                        })}
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
-              <div className="flex items-center gap-2 mt-3 justify-end">
+              <div className="flex items-center gap-1.5 mt-3 justify-end">
                 <span className="text-[10px] text-slate-500">Less</span>
-                {[0, 1, 2, 3, 4, 5].map(v => <HeatmapCell key={v} count={v} />)}
+                {[0, 1, 2, 3, 4, 5].map(v => (
+                  <div
+                    key={v}
+                    className="w-2.5 h-2.5 rounded-sm"
+                    style={{ backgroundColor: HEATMAP_COLORS[v] }}
+                    title={v === 0 ? "0 contributions" : `${v}${v === 5 ? "+" : ""} contributions`}
+                  />
+                ))}
                 <span className="text-[10px] text-slate-500">More</span>
               </div>
             </motion.div>
