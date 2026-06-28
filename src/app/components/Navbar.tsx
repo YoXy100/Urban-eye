@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
-import { Menu, X, Bell, Search, ChevronDown, Zap, LogOut } from "lucide-react";
+import { Menu, X, Bell, Search, ChevronDown, Zap, LogOut, LayoutDashboard, Map as MapIcon, User, Award, FileText, Settings, Plus } from "lucide-react";
+import { CommandDialog, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem } from "./ui/command";
 import { useApp } from "../context/AppContext";
 
 const NAV_LINKS = [
@@ -24,10 +25,23 @@ export default function Navbar() {
   const { user, issues, logout } = useApp();
   const newIssues = issues.filter((i) => i.status === "new").length;
 
+  const [searchOpen, setSearchOpen] = useState(false);
+
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", handler);
     return () => window.removeEventListener("scroll", handler);
+  }, []);
+
+  useEffect(() => {
+    const down = (e: KeyboardEvent) => {
+      if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        setSearchOpen((open) => !open);
+      }
+    };
+    document.addEventListener("keydown", down);
+    return () => document.removeEventListener("keydown", down);
   }, []);
 
   useEffect(() => {
@@ -120,7 +134,10 @@ export default function Navbar() {
           {/* Right Side */}
           <div className="flex items-center gap-2">
             {/* Search */}
-            <button className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg border border-white/8 bg-white/5 text-slate-400 text-sm hover:bg-white/8 hover:text-white transition-all duration-200">
+            <button 
+              onClick={() => setSearchOpen(true)}
+              className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg border border-white/8 bg-white/5 text-slate-400 text-sm hover:bg-white/8 hover:text-white transition-all duration-200"
+            >
               <Search size={13} />
               <span className="hidden lg:block text-xs">Search</span>
               <kbd className="hidden lg:block text-[10px] font-mono bg-white/10 px-1.5 py-0.5 rounded text-slate-500">⌘K</kbd>
@@ -284,6 +301,45 @@ export default function Navbar() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Command Palette */}
+      <CommandDialog open={searchOpen} onOpenChange={setSearchOpen}>
+        <CommandInput placeholder="Type a command or search..." />
+        <CommandList>
+          <CommandEmpty>No results found.</CommandEmpty>
+          
+          <CommandGroup heading="Navigation">
+            {NAV_LINKS.map(link => (
+              <CommandItem 
+                key={link.href} 
+                onSelect={() => {
+                  setSearchOpen(false);
+                  navigate(link.href);
+                }}
+              >
+                {link.label === "Dashboard" && <LayoutDashboard className="mr-2 h-4 w-4" />}
+                {link.label === "Report Issue" && <Plus className="mr-2 h-4 w-4" />}
+                {link.label === "City Map" && <MapIcon className="mr-2 h-4 w-4" />}
+                {link.label === "Kanban" && <FileText className="mr-2 h-4 w-4" />}
+                {link.label === "Rewards" && <Award className="mr-2 h-4 w-4" />}
+                {link.label === "Profile" && <User className="mr-2 h-4 w-4" />}
+                <span>{link.label}</span>
+              </CommandItem>
+            ))}
+          </CommandGroup>
+
+          <CommandGroup heading="Actions">
+            <CommandItem onSelect={() => { setSearchOpen(false); navigate("/report"); }}>
+              <Plus className="mr-2 h-4 w-4" />
+              <span>Report New Issue</span>
+            </CommandItem>
+            <CommandItem onSelect={() => { setSearchOpen(false); navigate("/profile"); }}>
+              <Settings className="mr-2 h-4 w-4" />
+              <span>Account Settings</span>
+            </CommandItem>
+          </CommandGroup>
+        </CommandList>
+      </CommandDialog>
     </motion.nav>
   );
 }
