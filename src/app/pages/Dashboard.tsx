@@ -194,13 +194,10 @@ interface IssueCardProps {
 }
 
 const LocalIssueCard: React.FC<IssueCardProps> = ({ issue }) => {
-  const { upvoteIssue, updateIssueStatus, reportFakeIssue, deleteIssue, user } = useApp();
+  const { upvoteIssue, updateIssueStatus, reportFakeIssue, deleteIssue, user, addComment } = useApp();
   const [isExpanded, setIsExpanded] = useState(false);
   const [commentText, setCommentText] = useState("");
-  const [comments, setComments] = useState<string[]>([
-    "Agreed, I drove past this yesterday and had to brake hard.",
-    "Assigned to district maintenance crew, resolving soon.",
-  ]);
+  const [comments, setComments] = useState<string[]>([]);
   const [voted, setVoted] = useState(false);
   const [showFlagModal, setShowFlagModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -210,11 +207,13 @@ const LocalIssueCard: React.FC<IssueCardProps> = ({ issue }) => {
   const isOwner = !!user && user.uid === (issue as any).reportedBy;
   const canFlag = !!user && !isOwner && !flagged;
 
-  const handleAddComment = (e: React.FormEvent) => {
+  const handleAddComment = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!commentText.trim()) return;
-    setComments(prev => [...prev, commentText]);
+    const textToSubmit = commentText;
+    setComments(prev => [...prev, textToSubmit]);
     setCommentText("");
+    await addComment(issue.id, textToSubmit);
   };
 
   const handleUpvote = () => {
@@ -383,7 +382,7 @@ const LocalIssueCard: React.FC<IssueCardProps> = ({ issue }) => {
               }`}
             >
               <ArrowUp className={`w-3.5 h-3.5 ${voted ? "animate-bounce text-cyan-300" : ""}`} />
-              <span>{issue.votes + (voted ? 1 : 0)} Upvotes</span>
+              <span>{issue.votes} Upvotes</span>
             </button>
 
             {/* Comments toggle */}

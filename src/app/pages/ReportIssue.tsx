@@ -303,7 +303,7 @@ export default function ReportIssue() {
       title: form.title, description: form.description,
       category: form.category as IssueCategory, priority: form.priority,
       status: "new", location: form.location, lat: form.lat, lng: form.lng,
-      votes: 1, comments: 0,
+      votes: 0, comments: 0,
       reportedBy: user?.uid || "anonymous",
       reportedAt: new Date().toISOString().split("T")[0],
       image: uploadedImage || form.image,

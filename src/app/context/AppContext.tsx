@@ -25,6 +25,7 @@ interface AppContextType {
   upvoteIssue: (id: string) => Promise<void>;
   updateIssueStatus: (id: string, status: Issue["status"]) => Promise<void>;
   reportFakeIssue: (id: string, reason: string) => Promise<void>;
+  addComment: (id: string, text: string) => Promise<void>;
   updateProfile: (data: { name?: string; photoURL?: string }) => Promise<void>;
   redeemReward: (cost: number) => Promise<string>;
 }
@@ -128,6 +129,17 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
+  async function addComment(id: string, text: string) {
+    if (!user) return;
+    const ref = doc(db, "issues", id);
+    const current = issues.find(i => i.id === id);
+    if (current) {
+      await updateDoc(ref, { comments: (current.comments || 0) + 1 });
+      // Log activity
+      logActivity(user.uid, "comment_added", `Commented on: ${current.title}`, id);
+    }
+  }
+
   async function updateIssueStatus(id: string, status: Issue["status"]) {
     if (!user) return;
     await updateDoc(doc(db, "issues", id), { status });
@@ -179,7 +191,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       user, firebaseUser, loading, issues, activities,
       loginWithGoogle, loginWithGithub, logout,
       addIssue, deleteIssue, upvoteIssue, updateIssueStatus,
-      reportFakeIssue, updateProfile, redeemReward
+      reportFakeIssue, addComment, updateProfile, redeemReward
     }}>
       {children}
     </AppContext.Provider>
